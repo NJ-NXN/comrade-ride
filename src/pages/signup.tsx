@@ -1,12 +1,13 @@
 // src/pages/Signup.tsx
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate} from "react-router-dom";
 
 const Signup = () => {
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(""); // State to hold password mismatch errors
+  const navigate = useNavigate();
 
   const handleSignup = (e: React.FormEvent) => {
     e.preventDefault();
@@ -22,6 +23,8 @@ const Signup = () => {
 
     console.log("Signup submitted:", { emailOrPhone, password });
     // Later: Send to database and trigger the automated welcome email here!
+    // Simulate a successful sign up by redirecting to the dashboard
+    navigate("/dashboard");
   };
 
   return (

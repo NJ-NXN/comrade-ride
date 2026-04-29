@@ -1,14 +1,17 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 
 const Login = () => {
   const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
+  const navigate = useNavigate();
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     console.log("Login submitted:", { emailOrPhone, password });
     // Backend logic goes here later
+    // Simulate a successful login by redirecting to the dashboard
+    navigate("/dashboard");
   };
 
   return (
