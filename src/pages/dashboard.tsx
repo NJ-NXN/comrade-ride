@@ -62,6 +62,7 @@ const Dashboard = () => {
           isOpen={isModalOpen} 
           onClose={() => setIsModalOpen(false)} 
           ride={selectedRide} 
+          selectedDate={date}
         />
 
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>

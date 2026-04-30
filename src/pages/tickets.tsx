@@ -1,11 +1,9 @@
 import { Link } from "react-router-dom";
 import ProfileSidebar from "../components/profileSidebar";
 import { useState } from "react";
+import { useTickets } from "../context/TicketContext";
 
 // Mock data for tickets
-const ACTIVE_TICKETS = [
-  { id: "t1", route: "Rongai to MMU", date: "Today", time: "07:30 AM", vehicle: "KDG 456K", seat: "4", status: "Active", fare: 50 }
-];
 
 const PAST_TICKETS = [
   { id: "t2", route: "Langata to Strathmore", date: "12 Apr 2026", time: "08:00 AM", vehicle: "KCX 123J", seat: "11", status: "Completed", fare: 60 },
@@ -14,6 +12,7 @@ const PAST_TICKETS = [
 
 const Tickets = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const { tickets } = useTickets();
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col w-full">
@@ -34,7 +33,7 @@ const Tickets = () => {
           </button>
         </div>
       </header>
-
+        
       <main className="flex-1 w-full max-w-4xl mx-auto p-4 sm:p-6">
         <h2 className="text-3xl font-bold text-gray-900 mb-8">My Tickets</h2>
 
@@ -46,28 +45,27 @@ const Tickets = () => {
           </h3>
           
           <div className="space-y-4">
-            {ACTIVE_TICKETS.map(ticket => (
-              <div key={ticket.id} className="bg-white border-2 border-blue-500 rounded-xl p-0 shadow-md overflow-hidden flex flex-col sm:flex-row">
-                {/* QR Code Placeholder Area */}
-                <div className="bg-blue-600 text-white p-6 flex flex-col justify-center items-center sm:w-1/3">
-                  <div className="bg-white w-24 h-24 rounded-lg flex items-center justify-center mb-3">
-                    <svg className="w-16 h-16 text-gray-800" fill="currentColor" viewBox="0 0 24 24"><path d="M3 3h8v8H3V3zm2 2v4h4V5H5zm8-2h8v8h-8V3zm2 2v4h4V5h-4zM3 13h8v8H3v-8zm2 2v4h4v-4H5zm13-2h3v2h-3v-2zm-3 0h2v2h-2v-2zm3 3h3v2h-3v-2zm-3 0h2v4h-2v-4zm3 3h3v2h-3v-2z"></path></svg>
-                  </div>
-                  <span className="text-sm font-medium opacity-80">Show to Captain</span>
-                </div>
-                
-                {/* Ticket Details */}
+            {/* 3. Show a message if they have no tickets */}
+            {tickets.length === 0 && (
+              <p className="text-gray-500 italic">No upcoming rides booked yet.</p>
+            )}
+
+            {/* 4. Map over the REAL tickets! */}
+            {tickets.map(ticket => (
+              <div key={ticket.ticketId} className="bg-white border-2 border-blue-500 rounded-xl p-0 shadow-md overflow-hidden flex flex-col sm:flex-row">
+                 
+                {/* Ticket Details using the real properties */}
                 <div className="p-6 flex-1 flex flex-col justify-center">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="text-sm text-gray-500 font-medium">{ticket.date} • {ticket.time}</p>
-                      <h4 className="text-2xl font-bold text-gray-900">{ticket.route}</h4>
+                      <p className="text-sm text-gray-500 font-medium">{ticket.bookingDate} • {ticket.departureTime}</p>
+                      <h4 className="text-2xl font-bold text-gray-900">Your Route</h4>
                     </div>
-                    <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Seat {ticket.seat}</span>
+                    <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Seat {ticket.seatNumber}</span>
                   </div>
                   <div className="flex items-center gap-6 text-sm text-gray-600 border-t border-gray-100 pt-4">
-                    <p>Vehicle: <span className="font-bold text-gray-900">{ticket.vehicle}</span></p>
-                    <p>Paid: <span className="font-bold text-gray-900">KSh {ticket.fare}</span></p>
+                    <p>Vehicle: <span className="font-bold text-gray-900">{ticket.vehiclePlate}</span></p>
+                    <p>Paid: <span className="font-bold text-gray-900">KSh {ticket.price}</span></p>
                   </div>
                 </div>
               </div>

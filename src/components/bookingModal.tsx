@@ -1,18 +1,21 @@
 import { useState, useEffect } from "react";
 import { type Ride } from "./ridecard";
 import { useNavigate } from "react-router-dom";
+import { useTickets } from "../context/TicketContext";
 
 interface BookingModalProps {
   isOpen: boolean;
   onClose: () => void;
   ride: Ride | null;
+  selectedDate: string;
 }
 
-const BookingModal = ({ isOpen, onClose, ride }: BookingModalProps) => {
+const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps) => {
 
   const [step, setStep] = useState<'details' | 'processing' | 'success'>('details');
   const [phoneNumber, setPhoneNumber] = useState("");
   const navigate = useNavigate();
+  const { bookTicket } = useTickets();
   
   // Whenever the modal opens, ensure we start at the 'details' step
   useEffect(() => {
@@ -31,6 +34,7 @@ const BookingModal = ({ isOpen, onClose, ride }: BookingModalProps) => {
     
     // Simulate the delay of an M-Pesa STK Push
     setTimeout(() => {
+      bookTicket(ride, selectedDate);
       setStep('success');
     }, 3000); 
   };
