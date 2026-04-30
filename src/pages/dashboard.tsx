@@ -1,6 +1,7 @@
 import { useState } from "react";
 import ProfileSidebar from "../components/profileSidebar";
 import RideCard, { type Ride } from "../components/ridecard";
+import BookingModal from "../components/bookingModal";
 
 //Dummy data for now - will fetch this from the backend later
 const DUMMY_RIDES: Ride[] = [
@@ -15,6 +16,9 @@ const Dashboard = () => {
   const [date, setDate] = useState("");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [hasSearched, setHasSearched] = useState(false);
+  //Track the modal visibility and the selected ride
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
   // We will use this to show an error if they select a past date - but for now we just reset it on every search
   const [dateError, setDateError] = useState("");
   const todayString = new Date().toISOString().split("T")[0];
@@ -38,16 +42,27 @@ const Dashboard = () => {
   };
 
   const handleBookRide = (rideId: string) => {
-    alert(`Initiating booking for ride ID: ${rideId}`);
+    // 1. Find the ride the user clicked from our dummy database
+    const rideToBook = DUMMY_RIDES.find(ride => ride.id === rideId);
+    
+    if (rideToBook) {
+      // 2. Set it as the active ride and open the modal
+      setSelectedRide(rideToBook);
+      setIsModalOpen(true);
+    }
   };
 
   return (
     <div className="relative min-h-screen w-full bg-[url('/src/assets/upperhill.jpg')] bg-cover bg-center bg-fixed">
 
-        <ProfileSidebar 
-        isOpen={isSidebarOpen} 
-        onClose={() => setIsSidebarOpen(false)} 
-      />
+      <ProfileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
+      
+        {/*BOOKING MODAL */}
+        <BookingModal 
+          isOpen={isModalOpen} 
+          onClose={() => setIsModalOpen(false)} 
+          ride={selectedRide} 
+        />
 
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
