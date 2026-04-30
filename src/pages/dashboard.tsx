@@ -1,10 +1,12 @@
 import { useState } from "react";
-//import { Link } from "react-router-dom";
+import ProfileSidebar from "../components/profileSidebar";
 
 const Dashboard = () => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
+
+  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -14,7 +16,12 @@ const Dashboard = () => {
 
   return (
     <div className="relative min-h-screen w-full bg-[url('/src/assets/upperhill.jpg')] bg-cover bg-center bg-fixed">
- 
+
+        <ProfileSidebar 
+        isOpen={isSidebarOpen} 
+        onClose={() => setIsSidebarOpen(false)} 
+      />
+
       <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
 
       {/* Main Content Wrapper: z-10 keeps everything above the blur layer */}
@@ -27,11 +34,14 @@ const Dashboard = () => {
             
             <div className="flex items-center gap-4">
               <span className="hidden sm:inline-block text-sm text-blue-100 font-medium">
-                Hello, Comrade
+                Hello, User
               </span>
-              <div className="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center font-bold shadow-sm">
-                C
-              </div>
+              <button 
+                onClick={() => setIsSidebarOpen(true)}
+                className="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center font-bold shadow-sm hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer"
+              >
+                U
+              </button>
             </div>
           </div>
         </header>
