@@ -1,17 +1,44 @@
 import { useState } from "react";
 import ProfileSidebar from "../components/profileSidebar";
+import RideCard, { type Ride } from "../components/ridecard";
+
+//Dummy data for now - will fetch this from the backend later
+const DUMMY_RIDES: Ride[] = [
+  { id: "r1", driverName: "Karis", vehiclePlate: "KCX 123J", departureTime: "07:00 AM", seatsAvailable: 14, price: 50 },
+  { id: "r2", driverName: "Ian", vehiclePlate: "KDG 456K", departureTime: "07:30 AM", seatsAvailable: 2, price: 50 },
+  { id: "r3", driverName: "Andrew", vehiclePlate: "KDL 789M", departureTime: "08:00 AM", seatsAvailable: 10, price: 50 },
+];
 
 const Dashboard = () => {
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
+  // We will use this to show an error if they select a past date - but for now we just reset it on every search
+  const [dateError, setDateError] = useState("");
+  const todayString = new Date().toISOString().split("T")[0];
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
+    setDateError("");
+    const selectedDate = new Date(date);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Reset time to midnight so only compared to the day
+
+    if(selectedDate.getTime() < today.getTime()) {
+      setDateError("You cannot book a ride for a date in the past. Please select a valid departure date.");
+      setHasSearched(false);  
+      return;
+    }
     console.log("Searching for rides:", { origin, destination, date });
+    setHasSearched(true);
+
     // Later: We will filter available rides based on these inputs!
+  };
+
+  const handleBookRide = (rideId: string) => {
+    alert(`Initiating booking for ride ID: ${rideId}`);
   };
 
   return (
@@ -107,20 +134,29 @@ const Dashboard = () => {
                   </select>
                 </div>
 
-                {/* Date Picker */}
+                {/*DATE INPUT SECTION */}
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Departure Date
-                  </label>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Departure Date</label>
                   <input 
                     type="date" 
-                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all text-gray-700"
-                    value={date}
-                    onChange={(e) => setDate(e.target.value)}
-                    required
+                    min={todayString} //validation: Grays out past dates in the calendar picker
+                    // Turn the border red if there is an error!
+                    className={`w-full px-4 py-3 border ${dateError ? 'border-red-500 focus:ring-red-500' : 'border-gray-300 focus:ring-blue-500'} rounded-lg focus:ring-2 outline-none text-gray-700 transition-colors`} 
+                    value={date} 
+                    onChange={(e) => {
+                      setDate(e.target.value);
+                      setDateError(""); // Clear the error instantly when the user types a new date
+                    }} 
+                    required 
                   />
-                </div>
+                  {/* Conditionally render the error message */}
+                  {dateError && (
+                    <p className="text-red-500 text-sm font-medium mt-2 animate-pulse">
+                      {dateError}
+                    </p>
+                  )}
 
+                </div>
               </div>
 
               {/* Submit Button */}
@@ -135,21 +171,34 @@ const Dashboard = () => {
             </form>
           </div>
 
-          {/* Upcoming Trips Section */}
+         {/* DYNAMIC CONTENT AREA */}
           <div className="mt-12">
-            <h3 className="text-xl font-bold text-white mb-4 drop-shadow-md">Your Trips</h3>
-            
-            {/* Made this card slightly transparent to blend with the background */}
-            <div className="bg-white/90 backdrop-blur-sm border-0 rounded-xl p-8 text-center shadow-lg">
-              <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                {/* A simple calendar icon SVG */}
-                <svg className="w-8 h-8 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path>
-                </svg>
-              </div>
-              <p className="text-gray-600 font-medium">You have no upcoming rides booked.</p>
-              <p className="text-sm text-gray-500 mt-1">Use the search above to find your next shuttle.</p>
-            </div>
+            {!hasSearched ? (
+              // Show this if they HAVEN'T searched yet
+              <>
+                <h3 className="text-xl font-bold text-white mb-4 drop-shadow-md">Your Trips</h3>
+                <div className="bg-white/90 backdrop-blur-sm rounded-xl p-8 text-center shadow-lg">
+                  <p className="text-gray-600 font-medium">You have no upcoming rides booked.</p>
+                  <p className="text-sm text-gray-500 mt-1">Use the search above to find your next shuttle.</p>
+                </div>
+              </>
+            ) : (
+              // Show this if they HAVE searched
+              <>
+                <h3 className="text-xl font-bold text-white mb-4 drop-shadow-md">
+                  Available Shuttles
+                </h3>
+                <div className="flex flex-col gap-4">
+                  {DUMMY_RIDES.map((ride) => (
+                    <RideCard 
+                      key={ride.id} 
+                      ride={ride} 
+                      onBook={handleBookRide} 
+                    />
+                  ))}
+                </div>
+              </>
+            )}
           </div>
 
         </main>
