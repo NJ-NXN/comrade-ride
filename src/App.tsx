@@ -1,5 +1,8 @@
-import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
+// src/App.tsx
+import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
+import { AnimatePresence } from "framer-motion";
 import { TicketProvider } from "./context/TicketContext";
+
 import Login from "./pages/login";
 import Signup from "./pages/signup";
 import Dashboard from "./pages/dashboard";
@@ -7,21 +10,33 @@ import Tickets from "./pages/tickets";
 import AccountDetails from "./pages/AccountDetails";
 import PaymentMethods from "./pages/PaymentMethods";
 
-function App() {
+// 1. Create a sub-component to handle the animated routing
+const AnimatedRoutes = () => {
+  const location = useLocation(); // Tracks which page we are currently on
+
   return (
-    <TicketProvider>
-    <BrowserRouter>
-      <Routes>
-        {/* We will redirect the home page directly to the login for now */}
+    // mode="wait" ensures the current page slides out BEFORE the new one loads in
+    <AnimatePresence mode="wait">
+      <Routes location={location} key={location.pathname}>
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />}/>
-        <Route path="/tickets" element={<Tickets />}/>
-        <Route path="/account" element={<AccountDetails />}/>
-        <Route path="/payment-methods" element={<PaymentMethods />}/>
+        <Route path="/dashboard" element={<Dashboard />} />
+        <Route path="/tickets" element={<Tickets />} />
+        <Route path="/account" element={<AccountDetails />} />
+        <Route path="/payments" element={<PaymentMethods />} />
       </Routes>
-    </BrowserRouter>
+    </AnimatePresence>
+  );
+};
+
+// 2. The main App component
+function App() {
+  return (
+    <TicketProvider>
+      <BrowserRouter>
+        <AnimatedRoutes />
+      </BrowserRouter>
     </TicketProvider>
   );
 }

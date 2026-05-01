@@ -1,5 +1,6 @@
 import { useState } from "react";
 import ProfileSidebar from "../components/profileSidebar";
+import { useLocation } from "react-router-dom";
 import RideCard, { type Ride } from "../components/ridecard";
 import BookingModal from "../components/bookingModal";
 
@@ -11,10 +12,11 @@ const DUMMY_RIDES: Ride[] = [
 ];
 
 const Dashboard = () => {
+  const location = useLocation();
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
-  const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(location.state?.openSidebar || false);
   const [hasSearched, setHasSearched] = useState(false);
   //Track the modal visibility and the selected ride
   const [isModalOpen, setIsModalOpen] = useState(false);

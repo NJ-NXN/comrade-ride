@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import ProfileSidebar from "../components/profileSidebar";
 import { useState } from "react";
 import { useTickets } from "../context/TicketContext";
+import { motion } from "framer-motion";
 
 // Mock data for tickets
 
@@ -15,13 +16,19 @@ const Tickets = () => {
   const { tickets } = useTickets();
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col w-full">
+    <motion.div
+      initial={{ x: "100%" }}
+      animate={{ x: 0 }}
+      exit={{ x: "100%" }}
+      transition={{ type: "spring", damping: 25, stiffness: 200 }}
+      className="min-h-screen bg-gray-50 flex flex-col w-full"
+    >
       <ProfileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
 
       {/* Navigation Bar */}
       <header className="bg-white shadow-sm px-6 py-4 border-b border-gray-200 sticky top-0 z-30">
         <div className="max-w-4xl mx-auto flex justify-between items-center w-full">
-          <Link to="/dashboard" className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold transition-colors">
+          <Link to="/dashboard" state={{ openSidebar: true }} className="flex items-center gap-2 text-blue-600 hover:text-blue-800 font-semibold transition-colors">
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path></svg>
             Back to Search
           </Link>
@@ -92,7 +99,7 @@ const Tickets = () => {
         </section>
 
       </main>
-    </div>
+    </motion.div>
   );
 };
 
