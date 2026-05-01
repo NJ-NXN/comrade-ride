@@ -1,17 +1,39 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 const Login = () => {
-  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [error, setError] = useState(""); 
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log("Login submitted:", { emailOrPhone, password });
-    // Backend logic goes here later
-    // Simulate a successful login by redirecting to the dashboard
-    navigate("/dashboard");
+    setError("");
+    setIsLoading(true);
+
+    try {
+      //Ask Supabase if this user exists
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: email,
+        password: password,
+      });
+
+      if (error) {
+        setError("Invalid email or password.");
+        return;
+      }
+
+      console.log("Logged in successfully:", data);
+      navigate("/dashboard"); // Take them to the app!
+
+    } catch (err) {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -30,15 +52,15 @@ const Login = () => {
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email or Phone Number
+                Email
               </label>
               <input
                 type="text"
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="07... or student@uni.ac.ke"
-                value={emailOrPhone}
-                onChange={(e) => setEmailOrPhone(e.target.value)}
+                placeholder="student@uni.ac.ke"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
               />
             </div>
 
@@ -60,13 +82,23 @@ const Login = () => {
                 onChange={(e) => setPassword(e.target.value)}
               />
             </div>
+            {/* Error Message Display */}
+            {error && (
+              <p className="text-red-500 text-sm font-medium text-center bg-red-50 py-2 rounded">
+                {error}
+              </p>
+            )}
 
             <button
               type="submit"
-              className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg"
+              disabled={isLoading}
+              className={`w-full text-white font-semibold py-3 rounded-lg transition-colors shadow-md ${
+                isLoading ? "bg-blue-400 cursor-not-allowed" : "bg-blue-600 hover:bg-blue-700 hover:shadow-lg"
+              }`}
             >
-              Log In
+              {isLoading ? "Logging in..." : "Log In"}
             </button>
+            
           </form>
 
           {/* Divider */}

@@ -1,4 +1,6 @@
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
+import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase";
 
 interface ProfileSidebarProps {
   isOpen: boolean;
@@ -6,6 +8,16 @@ interface ProfileSidebarProps {
 }
 
 const ProfileSidebar = ({ isOpen, onClose }: ProfileSidebarProps) => {
+  const { user } = useAuth();
+  const navigate = useNavigate();
+  const rawName = user?.email?.split('@')[0] || "Comrade";
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const initial = displayName.charAt(0);
+  const handleLogout = async () => {
+    await supabase.auth.signOut(); // Tell Supabase to kill the session
+    onClose(); // Close the sidebar
+    navigate("/login"); // Kick them back to the login screen
+  };
   return (
     <>
       {/* THE BACKDROP OVERLAY */}
@@ -40,11 +52,11 @@ const ProfileSidebar = ({ isOpen, onClose }: ProfileSidebarProps) => {
         <div className="p-6 border-b border-gray-100">
           <div className="flex items-center gap-4">
             <div className="w-16 h-16 rounded-full bg-blue-100 border-2 border-blue-200 text-blue-700 flex items-center justify-center text-2xl font-bold shadow-sm">
-              U
+              {initial}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">User</h3>
-              <p className="text-sm text-gray-500">user@students.uni.ac.ke</p>
+              <h3 className="text-lg font-bold text-gray-900">{displayName}</h3>
+              <p className="text-sm text-gray-500 truncate">{user?.email}</p>
             </div>
           </div>
         </div>
@@ -69,15 +81,15 @@ const ProfileSidebar = ({ isOpen, onClose }: ProfileSidebarProps) => {
 
         {/* Footer / Logout Button locked to the bottom */}
         <div className="absolute bottom-0 left-0 w-full p-6 border-t border-gray-100 bg-white">
-          <Link 
-            to="/login"
-            className="flex items-center justify-center gap-2 w-full p-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors font-bold"
+          <button 
+            onClick={handleLogout} // <-- Attach the real logout function
+            className="flex items-center justify-center gap-2 w-full p-3 text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition-colors font-bold cursor-pointer"
           >
             <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"></path>
             </svg>
             Log Out
-          </Link>
+          </button>
         </div>
       </div>
     </>

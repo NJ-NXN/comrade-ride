@@ -3,6 +3,7 @@ import ProfileSidebar from "../components/profileSidebar";
 import { useLocation } from "react-router-dom";
 import RideCard, { type Ride } from "../components/ridecard";
 import BookingModal from "../components/bookingModal";
+import { useAuth } from "../context/AuthContext";
 
 //Dummy data for now - will fetch this from the backend later
 const DUMMY_RIDES: Ride[] = [
@@ -24,6 +25,10 @@ const Dashboard = () => {
   // We will use this to show an error if they select a past date - but for now we just reset it on every search
   const [dateError, setDateError] = useState("");
   const todayString = new Date().toISOString().split("T")[0];
+  const { user } = useAuth();
+  const rawName = user?.email?.split('@')[0] || "Comrade";
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const initial = displayName.charAt(0);
 
   const handleSearch = (e: React.FormEvent) => {
     e.preventDefault();
@@ -79,13 +84,13 @@ const Dashboard = () => {
             
             <div className="flex items-center gap-4">
               <span className="hidden sm:inline-block text-sm text-blue-100 font-medium">
-                Hello, User
+                Hello, {displayName}
               </span>
               <button 
                 onClick={() => setIsSidebarOpen(true)}
                 className="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center font-bold shadow-sm hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer"
               >
-                U
+                {initial}
               </button>
             </div>
           </div>

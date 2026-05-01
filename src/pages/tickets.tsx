@@ -3,6 +3,7 @@ import ProfileSidebar from "../components/profileSidebar";
 import { useState } from "react";
 import { useTickets } from "../context/TicketContext";
 import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
 
 // Mock data for tickets
 
@@ -14,6 +15,10 @@ const PAST_TICKETS = [
 const Tickets = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { tickets } = useTickets();
+  const { user } = useAuth();
+  const rawName = user?.email?.split('@')[0] || "Comrade";
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const initial = displayName.charAt(0);
 
   return (
     <motion.div
@@ -36,7 +41,7 @@ const Tickets = () => {
             onClick={() => setIsSidebarOpen(true)}
             className="w-10 h-10 rounded-full bg-blue-100 border border-blue-200 text-blue-700 flex items-center justify-center font-bold shadow-sm hover:ring-2 hover:ring-blue-400 transition-all cursor-pointer"
           >
-            U
+            {initial} 
           </button>
         </div>
       </header>

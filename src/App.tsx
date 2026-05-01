@@ -1,7 +1,7 @@
-// src/App.tsx
 import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-router-dom";
 import { AnimatePresence } from "framer-motion";
 import { TicketProvider } from "./context/TicketContext";
+import { AuthProvider } from "./context/AuthContext";
 
 import Login from "./pages/login";
 import Signup from "./pages/signup";
@@ -33,11 +33,13 @@ const AnimatedRoutes = () => {
 // 2. The main App component
 function App() {
   return (
-    <TicketProvider>
-      <BrowserRouter>
-        <AnimatedRoutes />
-      </BrowserRouter>
-    </TicketProvider>
+    <AuthProvider>
+      <TicketProvider>
+        <BrowserRouter>
+          <AnimatedRoutes />
+        </BrowserRouter>
+      </TicketProvider>
+    </AuthProvider>
   );
 }
 

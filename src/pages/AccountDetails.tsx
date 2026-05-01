@@ -1,7 +1,12 @@
 import { Link } from "react-router-dom";
 import { motion } from "framer-motion";
+import { useAuth } from "../context/AuthContext";
 
 const AccountDetails = () => {
+  const { user } = useAuth();
+  const rawName = user?.email?.split('@')[0] || "Comrade";
+  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
+  const initial = displayName.charAt(0);
   return (
     <motion.div
       initial={{ x: "100%" }}
@@ -25,21 +30,31 @@ const AccountDetails = () => {
       <main>
         <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-8">
           <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-100">
-            <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-4xl font-bold">U</div>
+            <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-4xl font-bold">{initial}</div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">User Comrade</h2>
-              <p className="text-gray-500">Student ID: STD-84920</p>
+              <h2 className="text-2xl font-bold text-gray-900">{displayName}</h2>
             </div>
           </div>
 
           <div className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Email Address</label>
-              <input type="email" disabled value="user@students.uni.ac.ke" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-500" />
+              <input 
+                type="email" 
+                disabled 
+                value={user?.email || ""} 
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-500" 
+              />
             </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">Phone Number</label>
-              <input type="text" disabled value="+254 712 345 678" className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-500" />
+              <input 
+                type="text" 
+                disabled 
+                //Pull the phone number from the user's metadata object
+                value={user?.user_metadata?.phone || "No phone provided"} 
+                className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-lg text-gray-500" 
+              />
             </div>
           </div>
         </div>

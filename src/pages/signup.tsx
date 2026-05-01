@@ -1,32 +1,54 @@
-// src/pages/Signup.tsx
 import { useState } from "react";
 import { Link, useNavigate} from "react-router-dom";
+import { supabase } from "../lib/supabase";
 
 const Signup = () => {
-  const [emailOrPhone, setEmailOrPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState(""); // State to hold password mismatch errors
-  const navigate = useNavigate();
+  const navigate = useNavigate(); // Initialize navigation
+  const [isLoading, setIsLoading] = useState(false); // Track loading state
 
-  const handleSignup = (e: React.FormEvent) => {
+  const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    // Reset error state on new submission
     setError("");
 
-    // Validation: Check if passwords match
     if (password !== confirmPassword) {
       setError("Passwords do not match. Please try again.");
       return;
     }
 
-    console.log("Signup submitted:", { emailOrPhone, password });
-    // Later: Send to database and trigger the automated welcome email here!
-    // Simulate a successful sign up by redirecting to the dashboard
-    navigate("/dashboard");
-  };
+    setIsLoading(true);
 
+    try {
+      // Send email/password for Auth, and Phone for Metadata
+      const { data, error } = await supabase.auth.signUp({
+        email: email, 
+        password: password,
+        options: {
+          data: {
+            phone: phone, //saves the phone number to the user's profile data
+          }
+        }
+      });
+
+      if (error) {
+        setError(error.message);
+        return;
+      }
+
+      console.log("Success!", data);
+      alert("Account created successfully! Please log in.");
+      navigate("/login"); // Send them to the login page
+
+    } catch (err) {
+      setError("An unexpected error occurred.");
+    } finally {
+      setIsLoading(false);
+    }
+  };
   return (
     <div className="min-h-screen w-full flex">
       
@@ -42,15 +64,28 @@ const Signup = () => {
           <form onSubmit={handleSignup} className="space-y-5">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email or Phone Number
+                Student Email
               </label>
               <input
-                type="text"
+                type="email"
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="07... or student@uni.ac.ke"
-                value={emailOrPhone}
-                onChange={(e) => setEmailOrPhone(e.target.value)}
+                placeholder="student@uni.ac.ke"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+              />
+            </div>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Phone Number
+              </label>
+              <input
+                type="tel"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                placeholder="0712 345 678"
+                value={phone}
+                onChange={(e) => setPhone(e.target.value)}
               />
             </div>
 
@@ -93,7 +128,7 @@ const Signup = () => {
               type="submit"
               className="w-full bg-blue-600 text-white font-semibold py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md hover:shadow-lg mt-2"
             >
-              Sign Up
+              {isLoading ? "Creating Account..." : "Sign Up"}
             </button>
           </form>
 
