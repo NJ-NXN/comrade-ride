@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
 const Login = () => {
-  const [email, setEmail] = useState("");
+  const [emailOrPhone, setEmailOrPhone] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState(""); 
   const [isLoading, setIsLoading] = useState(false);
@@ -14,10 +14,31 @@ const Login = () => {
     setError("");
     setIsLoading(true);
 
+    let loginEmail = emailOrPhone.trim();
+
     try {
-      //Ask Supabase if this user exists
+     // 1. Is this a phone number? (Simple check: no '@' symbol)
+      if (!loginEmail.includes("@")) {
+        // Look up the phone number in our new profiles table
+        const { data: profile, error: profileError } = await supabase
+          .from("profiles")
+          .select("email")
+          .eq("phone", loginEmail)
+          .maybeSingle(); // maybeSingle prevents a crash if it finds 0 matches
+
+        if (profileError || !profile) {
+          setError("No account found with this phone number. Please check your number or try your email.");
+          setIsLoading(false);
+          return;
+        }
+
+        // We found the phone number! Swap our variable to the real email address
+        loginEmail = profile.email;
+      }
+
+      // 2. Now log in securely using the email!
       const { data, error } = await supabase.auth.signInWithPassword({
-        email: email,
+        email: loginEmail,
         password: password,
       });
 
@@ -52,15 +73,15 @@ const Login = () => {
           <form onSubmit={handleLogin} className="space-y-6">
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
-                Email
+                Email or Phone Number
               </label>
               <input
                 type="text"
                 required
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="student@uni.ac.ke"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
+                placeholder="07... or student@uni.ac.ke"
+                value={emailOrPhone}
+                onChange={(e) => setEmailOrPhone(e.target.value)}
               />
             </div>
 

@@ -9,6 +9,7 @@ import Dashboard from "./pages/dashboard";
 import Tickets from "./pages/tickets";
 import AccountDetails from "./pages/AccountDetails";
 import PaymentMethods from "./pages/PaymentMethods";
+import ProtectedRoute from "./components/ProtectedRoute";
 
 // 1. Create a sub-component to handle the animated routing
 const AnimatedRoutes = () => {
@@ -18,13 +19,43 @@ const AnimatedRoutes = () => {
     // mode="wait" ensures the current page slides out BEFORE the new one loads in
     <AnimatePresence mode="wait">
       <Routes location={location} key={location.pathname}>
+          {/* Public routes */}
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/dashboard" element={<Dashboard />} />
-        <Route path="/tickets" element={<Tickets />} />
-        <Route path="/account" element={<AccountDetails />} />
-        <Route path="/payments" element={<PaymentMethods />} />
+        {/* Protected routes */}
+        <Route 
+          path="/dashboard" 
+          element={
+            <ProtectedRoute>
+              <Dashboard />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/tickets" 
+          element={
+            <ProtectedRoute>
+              <Tickets />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/account" 
+          element={
+            <ProtectedRoute>
+              <AccountDetails />
+            </ProtectedRoute>
+          } 
+        />
+        <Route 
+          path="/payments" 
+          element={
+            <ProtectedRoute>
+              <PaymentMethods />
+            </ProtectedRoute>
+          } 
+        />
       </Routes>
     </AnimatePresence>
   );
