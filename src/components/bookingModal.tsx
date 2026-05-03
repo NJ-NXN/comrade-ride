@@ -32,10 +32,16 @@ const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps
     e.preventDefault();
     setStep('processing');
     
-    // Simulate the delay of an M-Pesa STK Push
-    setTimeout(() => {
-      bookTicket(ride, selectedDate);
-      setStep('success');
+    // Simulate the M-Pesa phone prompt wait time
+    setTimeout(async () => {
+      try {
+        // save it to the cloud!
+        await bookTicket(ride, selectedDate); 
+        setStep('success');
+      } catch (error) {
+        alert("There was an issue saving your ticket. Please try again.");
+        setStep('details'); // Kick them back to the start if it fails
+      }
     }, 3000); 
   };
 
@@ -72,10 +78,10 @@ const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps
                 {/* Ride Summary */}
                 <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
                   <div className="flex justify-between items-center mb-2">
-                    <span className="text-sm font-semibold text-blue-800 uppercase">Shuttle {ride.vehiclePlate}</span>
-                    <span className="text-sm font-bold text-blue-900">{ride.departureTime}</span>
+                    <span className="text-sm font-semibold text-blue-800 uppercase">Shuttle {ride.vehicle_plate}</span>
+                    <span className="text-sm font-bold text-blue-900">{ride.departure_time}</span>
                   </div>
-                  <p className="text-sm text-blue-700">Captain: {ride.driverName}</p>
+                  <p className="text-sm text-blue-700">Captain: {ride.driver_name}</p>
                   <div className="mt-3 pt-3 border-t border-blue-200 flex justify-between items-center">
                     <span className="text-gray-600 font-medium">Total Fare</span>
                     <span className="text-xl font-black text-gray-900">KSh {ride.price}</span>
@@ -142,10 +148,9 @@ const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps
                     onClose(); // Close the modal
                     navigate("/tickets"); // <-- Route to tickets page!
                     }}
-            className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md"
-  >
-    View My Tickets
-  </button>
+                    className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md">
+                      View My Tickets
+                </button>
               </div>
             )}
 

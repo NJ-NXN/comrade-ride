@@ -1,5 +1,7 @@
-import { createContext, useContext, useState, type ReactNode } from "react";
+import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { type Ride } from "../components/ridecard";
+import { supabase } from "../lib/supabase";
+import { useAuth } from "./AuthContext";
 
 // Define what a Ticket looks like (Ride data + Ticket specifics)
 export interface Ticket extends Ride {
@@ -9,37 +11,98 @@ export interface Ticket extends Ride {
   status: "Active" | "Completed";
 }
 
-// Define the vault functions
 interface TicketContextType {
   tickets: Ticket[];
-  bookTicket: (ride: Ride, date: string) => void;
+  bookTicket: (ride: Ride, date: string) => Promise<void>;
+  isLoadingTickets: boolean;
 }
 
 const TicketContext = createContext<TicketContextType | undefined>(undefined);
 
 export const TicketProvider = ({ children }: { children: ReactNode }) => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
+  const [isLoadingTickets, setIsLoadingTickets] = useState(true);
+  const { user } = useAuth(); 
 
-  // Function to create a new ticket and save it to the vault
-  const bookTicket = (ride: Ride, date: string) => {
-    const newTicket: Ticket = {
-      ...ride,
-      ticketId: `TICK-${Math.floor(Math.random() * 10000)}`, // Random ID generator
-      bookingDate: date,
-      seatNumber: Math.floor(Math.random() * 14 + 1).toString(), // Random seat 1-14
-      status: "Active",
-    };
-    setTickets((prev) => [...prev, newTicket]);
+  const fetchTickets = async () => {
+    if (!user) {
+      setTickets([]);
+      setIsLoadingTickets(false);
+      return;
+    }
+
+    setIsLoadingTickets(true);
+    try {
+      // Fetch the tickets and join the ride data at once
+      const { data, error } = await supabase
+        .from("tickets")
+        .select(`
+          id,
+          seat_number,
+          status,
+          rides (*)
+        `)
+        .eq("user_id", user.id)
+        .order("created_at", { ascending: false });
+
+      if (error) throw error;
+
+      // Transform the database response so it perfectly matches what UI expects
+      const formattedTickets: Ticket[] = data.map((item: any) => ({
+        ...item.rides, 
+        ticketId: item.id,
+        seatNumber: item.seat_number,
+        status: item.status,
+        bookingDate: item.rides.departure_date,
+      }));
+
+      setTickets(formattedTickets);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+    } finally {
+      setIsLoadingTickets(false);
+    }
+  };
+
+  // Automatically fetch tickets when the app loads or when the user changes
+    useEffect(() => {
+    fetchTickets();
+  }, [user]);
+
+  // function to save a new ticket to the cloud
+  const bookTicket = async (ride: Ride, _date: string) => {
+    if (!user) return;
+
+    const randomSeat = Math.floor(Math.random() * 14 + 1).toString();
+
+    try {
+      const { error } = await supabase
+        .from("tickets")
+        .insert({
+          user_id: user.id,
+          ride_id: ride.id,
+          seat_number: randomSeat,
+          status: "Active"
+        });
+
+      if (error) throw error;
+
+      // Re-fetch tickets so the newly booked ride shows up instantly
+      await fetchTickets();
+
+    } catch (error) {
+      console.error("Error booking ticket:", error);
+      throw error; // Let the modal know it failed
+    }
   };
 
   return (
-    <TicketContext.Provider value={{ tickets, bookTicket }}>
+    <TicketContext.Provider value={{ tickets, bookTicket, isLoadingTickets }}>
       {children}
     </TicketContext.Provider>
   );
 };
 
-// Custom Hook to easily access the vault from any component
 export const useTickets = () => {
   const context = useContext(TicketContext);
   if (!context) throw new Error("useTickets must be used within TicketProvider");

@@ -16,9 +16,20 @@ const Tickets = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const { tickets } = useTickets();
   const { user } = useAuth();
+
   const rawName = user?.email?.split('@')[0] || "Comrade";
   const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
   const initial = displayName.charAt(0);
+
+  const formatLocation = (loc: string) => {
+    const locations: Record<string, string> = {
+      town: "CBD", maasai: "Rongai - Maasai Mall", cleanshelf: "Rongai - Cleanshelf", 
+      langata: "Langata - T-Mall", karen: "Karen - Galleria", mmu: "Multimedia University", strathmore: "Strathmore University", 
+      uon: "UoN Main Campus", cuea: "CUEA", copa: "Cooperative University", ksl: "Kenya School of Law", 
+      tangaza: "Tangaza University", africa: "Africa Nazarene University"
+    };
+    return locations[loc] || loc;
+  };
 
   return (
     <motion.div
@@ -70,13 +81,15 @@ const Tickets = () => {
                 <div className="p-6 flex-1 flex flex-col justify-center">
                   <div className="flex justify-between items-start mb-4">
                     <div>
-                      <p className="text-sm text-gray-500 font-medium">{ticket.bookingDate} • {ticket.departureTime}</p>
-                      <h4 className="text-2xl font-bold text-gray-900">Your Route</h4>
+                      <p className="text-sm text-gray-500 font-medium">{ticket.bookingDate} • {ticket.departure_time}</p>
+                      <h4 className="text-2xl font-bold text-gray-900">
+                        {formatLocation(ticket.origin)} <span className="text-gray-400 mx-1">→</span> {formatLocation(ticket.destination)}
+                      </h4>
                     </div>
                     <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full uppercase">Seat {ticket.seatNumber}</span>
                   </div>
                   <div className="flex items-center gap-6 text-sm text-gray-600 border-t border-gray-100 pt-4">
-                    <p>Vehicle: <span className="font-bold text-gray-900">{ticket.vehiclePlate}</span></p>
+                    <p>Vehicle: <span className="font-bold text-gray-900">{ticket.vehicle_plate}</span></p>
                     <p>Paid: <span className="font-bold text-gray-900">KSh {ticket.price}</span></p>
                   </div>
                 </div>

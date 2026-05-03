@@ -4,35 +4,36 @@ import { useLocation } from "react-router-dom";
 import RideCard, { type Ride } from "../components/ridecard";
 import BookingModal from "../components/bookingModal";
 import { useAuth } from "../context/AuthContext";
+import { supabase } from "../lib/supabase"; 
 
-//Dummy data for now - will fetch this from the backend later
-const DUMMY_RIDES: Ride[] = [
-  { id: "r1", driverName: "Karis", vehiclePlate: "KCX 123J", departureTime: "07:00 AM", seatsAvailable: 14, price: 50 },
-  { id: "r2", driverName: "Ian", vehiclePlate: "KDG 456K", departureTime: "07:30 AM", seatsAvailable: 2, price: 50 },
-  { id: "r3", driverName: "Andrew", vehiclePlate: "KDL 789M", departureTime: "08:00 AM", seatsAvailable: 10, price: 50 },
-];
 
 const Dashboard = () => {
   const location = useLocation();
+  const { user } = useAuth();
+
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
+  const [dateError, setDateError] = useState("");
+
   const [isSidebarOpen, setIsSidebarOpen] = useState(location.state?.openSidebar || false);
   const [hasSearched, setHasSearched] = useState(false);
-  //Track the modal visibility and the selected ride
+  const [availableRides, setAvailableRides] = useState<Ride[]>([]);
+  const [isSearching, setIsSearching] = useState(false); // Track loading state
+  
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
-  // We will use this to show an error if they select a past date - but for now we just reset it on every search
-  const [dateError, setDateError] = useState("");
+    
   const todayString = new Date().toISOString().split("T")[0];
-  const { user } = useAuth();
+  
   const rawName = user?.email?.split('@')[0] || "Comrade";
   const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
   const initial = displayName.charAt(0);
 
-  const handleSearch = (e: React.FormEvent) => {
+  const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
     setDateError("");
+
     const selectedDate = new Date(date);
     const today = new Date();
     today.setHours(0, 0, 0, 0); // Reset time to midnight so only compared to the day
@@ -42,23 +43,34 @@ const Dashboard = () => {
       setHasSearched(false);  
       return;
     }
-    console.log("Searching for rides:", { origin, destination, date });
+    setIsSearching(true);
     setHasSearched(true);
 
-    // Later: We will filter available rides based on these inputs!
-  };
+    try{
+      const { data, error } = await supabase
+        .from('rides')
+        .select('*')
+        .eq('origin', origin)
+        .eq('destination', destination)
+        .eq('departure_date', date);
 
-  const handleBookRide = (rideId: string) => {
-    // 1. Find the ride the user clicked from our dummy database
-    const rideToBook = DUMMY_RIDES.find(ride => ride.id === rideId);
-    
-    if (rideToBook) {
-      // 2. Set it as the active ride and open the modal
-      setSelectedRide(rideToBook);
-      setIsModalOpen(true);
+      if (error) throw error;
+
+      // Update the state with the real data
+      setAvailableRides(data || []);
+    } catch (error) {
+      console.error("Error fetching rides:", error);
+      alert("Failed to fetch rides. Please try again.");
+    } finally {
+      setIsSearching(false);
     }
   };
 
+  const handleBookRide = (ride: Ride) => {
+    setSelectedRide(ride);
+    setIsModalOpen(true);
+  };
+  
   return (
     <div className="relative min-h-screen w-full bg-[url('/src/assets/upperhill.jpg')] bg-cover bg-center bg-fixed">
 
@@ -197,7 +209,6 @@ const Dashboard = () => {
          {/* DYNAMIC CONTENT AREA */}
           <div className="mt-12">
             {!hasSearched ? (
-              // Show this if they HAVEN'T searched yet
               <>
                 <h3 className="text-xl font-bold text-white mb-4 drop-shadow-md">Your Trips</h3>
                 <div className="bg-white/90 backdrop-blur-sm rounded-xl p-8 text-center shadow-lg">
@@ -206,20 +217,35 @@ const Dashboard = () => {
                 </div>
               </>
             ) : (
-              // Show this if they HAVE searched
               <>
                 <h3 className="text-xl font-bold text-white mb-4 drop-shadow-md">
                   Available Shuttles
                 </h3>
-                <div className="flex flex-col gap-4">
-                  {DUMMY_RIDES.map((ride) => (
-                    <RideCard 
-                      key={ride.id} 
-                      ride={ride} 
-                      onBook={handleBookRide} 
-                    />
-                  ))}
-                </div>
+                
+                {/* Handle loading state */}
+                {isSearching ? (
+                  <div className="text-center py-12 bg-white/90 backdrop-blur-sm rounded-xl">
+                    <div className="inline-block animate-spin rounded-full h-8 w-8 border-4 border-gray-200 border-t-blue-600 mb-4"></div>
+                    <p className="text-gray-600 font-medium">Looking for available captains...</p>
+                  </div>
+                ) : availableRides.length === 0 ? (
+                  /* Handle empty results */
+                  <div className="bg-white/90 backdrop-blur-sm rounded-xl p-8 text-center shadow-lg border-l-4 border-yellow-500">
+                    <p className="text-gray-800 font-bold text-lg">No shuttles found.</p>
+                    <p className="text-gray-600 mt-1">Try selecting a different date or route.</p>
+                  </div>
+                ) : (
+                  /* Map over REAL data */
+                  <div className="flex flex-col gap-4">
+                    {availableRides.map((ride) => (
+                      <RideCard 
+                        key={ride.id} 
+                        ride={ride} 
+                        onBook={() => handleBookRide(ride)} 
+                      />
+                    ))}
+                  </div>
+                )}
               </>
             )}
           </div>
