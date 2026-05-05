@@ -5,6 +5,7 @@ import { useAuth } from "./AuthContext";
 
 // Define what a Ticket looks like (Ride data + Ticket specifics)
 export interface Ticket extends Ride {
+  route: ReactNode;
   ticketId: string;
   bookingDate: string;
   seatNumber: string;
