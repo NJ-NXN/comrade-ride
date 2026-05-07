@@ -9,12 +9,13 @@ export interface Ticket extends Ride {
   ticketId: string;
   bookingDate: string;
   seatNumber: string;
-  status: "Active" | "Completed";
+  status: "Active" | "Completed"| "Cancelled";
 }
 
 interface TicketContextType {
   tickets: Ticket[];
   bookTicket: (ride: Ride, date: string) => Promise<void>;
+  cancelTicket: (ticketId: string) => Promise<void>;
   isLoadingTickets: boolean;
 }
 
@@ -97,8 +98,25 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
+  const cancelTicket = async (ticketId: string) => {
+    try {
+      const { error } = await supabase
+        .from("tickets")
+        .update({ status: "Cancelled" })
+        .eq("id", ticketId);
+
+      if (error) throw error;
+      
+      // Refresh the tickets list to instantly update the UI!
+      await fetchTickets();
+    } catch (error) {
+      console.error("Error cancelling ticket:", error);
+      throw error;
+    }
+  };
+
   return (
-    <TicketContext.Provider value={{ tickets, bookTicket, isLoadingTickets }}>
+    <TicketContext.Provider value={{ tickets, bookTicket, cancelTicket, isLoadingTickets }}>
       {children}
     </TicketContext.Provider>
   );
