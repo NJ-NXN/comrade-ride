@@ -84,13 +84,13 @@ const Dashboard = () => {
           selectedDate={date}
         />
 
-      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm"></div>
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
 
       {/* Main Content Wrapper: z-10 keeps everything above the blur layer */}
       <div className="relative z-10 flex flex-col min-h-screen w-full">
         
         {/* Top Navigation Bar */}
-        <header className="backdrop-blur px-6 py-4">
+        <header className="backdrop-blur-xs px-6 py-4">
           <div className="max-w-6xl mx-auto flex justify-between items-center w-full">
             <h1 className="text-xl font-bold text-blue-200">Comrade Connect</h1>
             
