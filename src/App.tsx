@@ -10,6 +10,8 @@ import Tickets from "./pages/tickets";
 import AccountDetails from "./pages/AccountDetails";
 import PaymentMethods from "./pages/PaymentMethods";
 import ProtectedRoute from "./components/ProtectedRoute";
+import ForgotPassword from "./pages/ForgotPassword";
+import ResetPassword from "./pages/ResetPassword";
 
 // 1. Create a sub-component to handle the animated routing
 const AnimatedRoutes = () => {
@@ -23,6 +25,8 @@ const AnimatedRoutes = () => {
         <Route path="/" element={<Navigate to="/login" replace />} />
         <Route path="/login" element={<Login />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/forgot-password" element={<ForgotPassword />} />
+        <Route path="/reset-password" element={<ResetPassword />} />
         {/* Protected routes */}
         <Route 
           path="/dashboard" 
