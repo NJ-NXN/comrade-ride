@@ -4,9 +4,9 @@ import { useAuth } from "../context/AuthContext";
 
 const AccountDetails = () => {
   const { user } = useAuth();
-  const rawName = user?.email?.split('@')[0] || "Comrade";
-  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-  const initial = displayName.charAt(0);
+  const fullUserName = user?.user_metadata?.full_name || "Comrade";
+  const displayName = fullUserName.split(' ')[0];
+  const initial = displayName.charAt(0).toUpperCase();
   return (
     <motion.div
       initial={{ x: "100%" }}
@@ -32,7 +32,7 @@ const AccountDetails = () => {
           <div className="flex items-center gap-6 mb-8 pb-8 border-b border-gray-100">
             <div className="w-24 h-24 rounded-full bg-blue-100 text-blue-600 flex items-center justify-center text-4xl font-bold">{initial}</div>
             <div>
-              <h2 className="text-2xl font-bold text-gray-900">{displayName}</h2>
+              <h2 className="text-2xl font-bold text-gray-900">{fullUserName}</h2>
             </div>
           </div>
 

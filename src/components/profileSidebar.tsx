@@ -10,9 +10,9 @@ interface ProfileSidebarProps {
 const ProfileSidebar = ({ isOpen, onClose }: ProfileSidebarProps) => {
   const { user } = useAuth();
   const navigate = useNavigate();
-  const rawName = user?.email?.split('@')[0] || "Comrade";
-  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-  const initial = displayName.charAt(0);
+  const fullUserName = user?.user_metadata?.full_name || "Comrade";
+  const displayName = fullUserName.split(' ')[0];
+  const initial = displayName.charAt(0).toUpperCase();
   const handleLogout = async () => {
     await supabase.auth.signOut(); // Tell Supabase to kill the session
     onClose(); // Close the sidebar
@@ -55,7 +55,7 @@ const ProfileSidebar = ({ isOpen, onClose }: ProfileSidebarProps) => {
               {initial}
             </div>
             <div>
-              <h3 className="text-lg font-bold text-gray-900">{displayName}</h3>
+              <h3 className="text-lg font-bold text-gray-900">{fullUserName}</h3>
               <p className="text-sm text-gray-500 truncate">{user?.email}</p>
             </div>
           </div>

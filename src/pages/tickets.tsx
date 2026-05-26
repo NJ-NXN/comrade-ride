@@ -11,9 +11,9 @@ const Tickets = () => {
   const { tickets, cancelTicket, isLoadingTickets } = useTickets();
   const { user } = useAuth(); 
 
-  const rawName = user?.email?.split('@')[0] || "Comrade";
-  const displayName = rawName.charAt(0).toUpperCase() + rawName.slice(1);
-  const initial = displayName.charAt(0);
+const fullUserName = user?.user_metadata?.full_name || "Comrade";
+  const displayName = fullUserName.split(' ')[0];
+  const initial = displayName.charAt(0).toUpperCase();
 
   const formatLocation = (loc: string) => {
     const locations: Record<string, string> = {
