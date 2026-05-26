@@ -3,6 +3,7 @@ import { Link, useNavigate} from "react-router-dom";
 import { supabase } from "../lib/supabase";
 
 const Signup = () => {
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [password, setPassword] = useState("");
@@ -29,7 +30,9 @@ const Signup = () => {
         password: password,
         options: {
           data: {
-            phone: phone, //saves the phone number to the user's profile data
+            //saves the phone number and name to the user's profile data
+            phone: phone, 
+            full_name: fullName,
           }
         }
       });
@@ -62,6 +65,19 @@ const Signup = () => {
           </div>
 
           <form onSubmit={handleSignup} className="space-y-5">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">
+                Full Name
+              </label>
+              <input
+                type="text"
+                required
+                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                placeholder="e.g. Nixon Junior"
+                value={fullName}
+                onChange={(e) => setFullName(e.target.value)}
+              />
+            </div>
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Student Email
