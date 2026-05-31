@@ -4,14 +4,14 @@ import { useState } from "react";
 import { useTickets } from "../context/TicketContext";
 import { motion } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
+import {useAlert} from "../context/AlertContext";
 
 const Tickets = () => {
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
   const { tickets, cancelTicket, isLoadingTickets } = useTickets();
   const { user } = useAuth(); 
-
-const fullUserName = user?.user_metadata?.full_name || "Comrade";
+  const { showAlert } = useAlert();
+  const fullUserName = user?.user_metadata?.full_name || "Comrade";
   const displayName = fullUserName.split(' ')[0];
   const initial = displayName.charAt(0).toUpperCase();
 
@@ -37,9 +37,17 @@ const fullUserName = user?.user_metadata?.full_name || "Comrade";
 
     try {
       await cancelTicket(ticketId);
-      alert("Ticket cancelled successfully.");
+      showAlert({
+        title: "Ticket Cancelled",
+        message: "Your ticket has been cancelled successfully.",
+        type: "success"
+      });
     } catch (error) {
-      alert("Failed to cancel ticket. Please try again.");
+      showAlert({
+        title: "Cancellation Failed",
+        message: "Failed to cancel ticket. Please try again.",
+        type: "error"
+      });
     }
   };
 

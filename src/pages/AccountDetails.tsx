@@ -3,6 +3,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { motion, AnimatePresence } from "framer-motion";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase";
+import { useAlert } from "../context/AlertContext";
 
 const AccountDetails = () => {
   const { user } = useAuth();
@@ -20,6 +21,7 @@ const AccountDetails = () => {
   const [showCurrentPassword, setShowCurrentPassword] = useState(false);
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmNewPassword, setShowConfirmNewPassword] = useState(false);
+  const { showAlert } = useAlert();
 
   // Populate the form with existing data when the component loads
   useEffect(() => {
@@ -48,14 +50,22 @@ const AccountDetails = () => {
         .eq("id", user.id);
       if (profileError) throw profileError;
 
-      alert("Profile updated successfully!");
+      showAlert({
+        title: "Profile Updated",
+        message: "Your profile has been updated successfully.",
+        type: "success"
+      });
       setIsEditing(false); // Turn off edit mode
 
       // Force a page refresh to update the sidebar and header instantly
       window.location.reload(); 
 
     } catch (error: any) {
-      alert(error.message || "Failed to update profile.");
+      showAlert({
+        title: "Update Failed",
+        message: error.message || "Failed to update profile.",
+        type: "error"
+      });
     } finally {
       setIsLoading(false);
     }
@@ -127,11 +137,19 @@ const AccountDetails = () => {
       // Sign the user out of the app locally
       await supabase.auth.signOut();
       
-      alert("Your account has been permanently deleted.");
+      showAlert({
+        title: "Account Deleted",
+        message: "Your account has been permanently deleted.",
+        type: "success"
+      });
       navigate("/login");
       
     } catch (error: any) {
-      alert("Failed to delete account. Please try again.");
+      showAlert({
+        title: "Deletion Failed",
+        message: "Failed to delete account. Please try again.",
+        type: "error"
+      });
       console.error(error);
     } finally {
       setIsLoading(false);

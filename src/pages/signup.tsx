@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate} from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAlert } from "../context/AlertContext";
 
 const Signup = () => {
   const [fullName, setFullName] = useState("");
@@ -13,7 +14,7 @@ const Signup = () => {
   const [error, setError] = useState(""); // State to hold password mismatch errors
   const navigate = useNavigate(); // Initialize navigation
   const [isLoading, setIsLoading] = useState(false); // Track loading state
-
+  const { showAlert } = useAlert();
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -45,7 +46,7 @@ const Signup = () => {
       }
 
       console.log("Success!", data);
-      alert("Account created successfully! Please log in.");
+      showAlert({ title: "Account Created", message: "Your account has been created successfully!" });
       navigate("/login"); // Send them to the login page
 
     } catch (err) {

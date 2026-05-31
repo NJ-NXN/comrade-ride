@@ -2,6 +2,7 @@ import { BrowserRouter, Routes, Route, Navigate, useLocation } from "react-route
 import { AnimatePresence } from "framer-motion";
 import { TicketProvider } from "./context/TicketContext";
 import { AuthProvider } from "./context/AuthContext";
+import { AlertProvider } from "./context/AlertContext";
 
 import Login from "./pages/login";
 import Signup from "./pages/signup";
@@ -69,13 +70,15 @@ const AnimatedRoutes = () => {
 function App() {
   return (
     <AuthProvider>
-      <TicketProvider>
-        <BrowserRouter>
-          <AnimatedRoutes />
-        </BrowserRouter>
-      </TicketProvider>
+      <AlertProvider>
+        <TicketProvider>
+          <BrowserRouter>
+            <AnimatedRoutes />
+          </BrowserRouter>
+        </TicketProvider>
+      </AlertProvider>
     </AuthProvider>
   );
-}
+} 
 
 export default App;

@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAlert } from "../context/AlertContext";
 
 const Login = () => {
   const [emailOrPhone, setEmailOrPhone] = useState("");
@@ -9,7 +10,7 @@ const Login = () => {
   const [error, setError] = useState(""); 
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-
+  const { showAlert } = useAlert();
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
@@ -44,7 +45,11 @@ const Login = () => {
       });
 
       if (error) {
-        setError("Invalid email or password.");
+        showAlert({
+          title: "Login Failed",
+          message: "Invalid email or password.",
+          type: "error"
+        });
         return;
       }
 

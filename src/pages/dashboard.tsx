@@ -5,27 +5,23 @@ import RideCard, { type Ride } from "../components/ridecard";
 import BookingModal from "../components/bookingModal";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase"; 
-
+import { useAlert } from "../context/AlertContext";
 
 const Dashboard = () => {
   const location = useLocation();
   const { user } = useAuth();
-
   const [origin, setOrigin] = useState("");
   const [destination, setDestination] = useState("");
   const [date, setDate] = useState("");
   const [dateError, setDateError] = useState("");
-
   const [isSidebarOpen, setIsSidebarOpen] = useState(location.state?.openSidebar || false);
   const [hasSearched, setHasSearched] = useState(false);
   const [availableRides, setAvailableRides] = useState<Ride[]>([]);
   const [isSearching, setIsSearching] = useState(false); // Track loading state
-  
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [selectedRide, setSelectedRide] = useState<Ride | null>(null);
-    
+  const [selectedRide, setSelectedRide] = useState<Ride | null>(null);  
   const todayString = new Date().toISOString().split("T")[0];
-  
+  const { showAlert } = useAlert();
   const fullUserName = user?.user_metadata?.full_name || "Comrade";
   const displayName = fullUserName.split(' ')[0];
   const initial = displayName.charAt(0).toUpperCase();
@@ -60,7 +56,11 @@ const Dashboard = () => {
       setAvailableRides(data || []);
     } catch (error) {
       console.error("Error fetching rides:", error);
-      alert("Failed to fetch rides. Please try again.");
+      showAlert({
+        title: "Fetch Failed",
+        message: "Failed to fetch rides. Please try again.",
+        type: "error"
+      });
     } finally {
       setIsSearching(false);
     }

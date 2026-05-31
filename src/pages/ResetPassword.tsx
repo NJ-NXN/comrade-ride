@@ -2,6 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAlert } from "../context/AlertContext";
 
 const ResetPassword = () => {
   const [password, setPassword] = useState("");
@@ -9,6 +10,7 @@ const ResetPassword = () => {
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { showAlert } = useAlert();
 
   // Make sure they actually clicked a secure link to get here
   useEffect(() => {
@@ -39,7 +41,11 @@ const ResetPassword = () => {
 
       if (error) throw error;
 
-      alert("Password updated successfully! You are now logged in.");
+      showAlert({
+        title: "Password Updated",
+        message: "Your password has been updated successfully! You are now logged in.",
+        type: "success"
+      });
       navigate("/dashboard");
 
     } catch (err: any) {
