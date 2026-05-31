@@ -69,15 +69,15 @@ const AnimatedRoutes = () => {
 // 2. The main App component
 function App() {
   return (
-    <AuthProvider>
-      <AlertProvider>
+    <AlertProvider>
+      <AuthProvider> 
         <TicketProvider>
           <BrowserRouter>
             <AnimatedRoutes />
           </BrowserRouter>
         </TicketProvider>
-      </AlertProvider>
-    </AuthProvider>
+      </AuthProvider>
+    </AlertProvider>
   );
 } 
 

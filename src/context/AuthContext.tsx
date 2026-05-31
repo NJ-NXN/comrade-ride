@@ -1,6 +1,7 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from "react";
 import { type User } from "@supabase/supabase-js";
 import { supabase } from "../lib/supabase";
+import { useAlert } from "./AlertContext";
 
 interface AuthContextType {
   user: User | null;
@@ -16,6 +17,7 @@ const INACTIVITY_TIMEOUT = 15 * 60 * 1000;
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
+  const { showAlert } = useAlert();
 
   useEffect(() => {
     //Check if there's an active session when the app loads
@@ -36,7 +38,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       // Check if they are actually logged in before trying to log them out
       const { data: { session } } = await supabase.auth.getSession();
       if (session) {
-        alert("You have been logged out due to inactivity for your security.");
+        showAlert({ title: "Logged Out", message: "You have been logged out due to inactivity." });
         await supabase.auth.signOut();
       }
     };
