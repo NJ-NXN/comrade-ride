@@ -50,7 +50,7 @@ const Login = () => {
         if (error.message.toLowerCase().includes("too many requests") || error.status === 429) {
           showAlert({
             title: "Account Temporarily Locked",
-            message: "For your security, we have paused login attempts. Please wait 15 minutes before trying again.",
+            message: "We have paused login attempts. Please wait 15 minutes before trying again.",
             type: "danger"
           });
           return;
