@@ -41,20 +41,32 @@ const Signup = () => {
       });
 
       if (error) {
+        // Rate limit check
+        if (error.message.toLowerCase().includes("too many requests") || error.status === 429) {
+          showAlert({
+            title: "Sign-Up Temporarily Paused",
+            message: "We have paused sign-up attempts. Please wait a few minutes before trying again.",
+            type: "danger"
+          });
+          return; // Stop execution here
+        }
+
+        // error handling for invalid emails or weak passwords
         setError(error.message);
         return;
       }
 
       console.log("Success!", data);
-      showAlert({ title: "Account Created", message: "Your account has been created successfully!" });
+      showAlert({ title: "Account Created", message: "Your account has been created successfully!", type: "success" });
       navigate("/login"); // Send them to the login page
 
-    } catch (err) {
-      setError("An unexpected error occurred.");
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
   };
+
   return (
     <div className="min-h-screen w-full flex">
       

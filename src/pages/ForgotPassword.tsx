@@ -1,28 +1,48 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { supabase } from "../lib/supabase";
+import { useAlert } from "../context/AlertContext";
 
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const [error, setError] = useState("");
+  const { showAlert } = useAlert();
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleResetRequest = async (e: React.FormEvent) => {
+const handleResetRequest = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setMessage("");
     setIsLoading(true);
 
     try {
-      // Tell Supabase to send the reset email. Passing dynamic origin ensures it works in both development and production environments.
       const { error } = await supabase.auth.resetPasswordForEmail(email, {
         redirectTo: `${window.location.origin}/reset-password`,
       });
 
-      if (error) throw error;
+      if (error) {
+        // Rate Limit check
+        if (error.message.toLowerCase().includes("too many requests") || error.status === 429) {
+          showAlert({
+            title: "Too Many Requests",
+            message: "We have paused password reset attempts. Please wait a few minutes before requesting another link.",
+            type: "danger"
+          });
+          setIsLoading(false);
+          return;
+        }
+        throw error;
+      }
 
+      // If successful!
       setMessage("If an account exists for this email, we have sent a password reset link.");
+      showAlert({
+        title: "Link Sent",
+        message: "Please check your inbox (and spam folder) for the password reset link.",
+        type: "success"
+      });
+      
     } catch (err: any) {
       setError(err.message || "An error occurred. Please try again.");
     } finally {

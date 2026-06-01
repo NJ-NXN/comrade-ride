@@ -34,7 +34,7 @@ const Login = () => {
           return;
         }
 
-        // We found the phone number! Swap our variable to the real email address
+        // Found the phone number! Swap our variable to the real email address
         loginEmail = profile.email;
       }
 
@@ -45,9 +45,21 @@ const Login = () => {
       });
 
       if (error) {
+        // Rate Limit Check
+        // Catch the 429 error before it shows a generic failure message
+        if (error.message.toLowerCase().includes("too many requests") || error.status === 429) {
+          showAlert({
+            title: "Account Temporarily Locked",
+            message: "For your security, we have paused login attempts. Please wait 15 minutes before trying again.",
+            type: "danger"
+          });
+          return;
+        }
+
+        // error handling for wrong password/email
         showAlert({
           title: "Login Failed",
-          message: "Invalid email or password.",
+          message: error.message || "Invalid email or password.",
           type: "error"
         });
         return;
@@ -56,8 +68,8 @@ const Login = () => {
       console.log("Logged in successfully:", data);
       navigate("/dashboard"); // Take them to the app!
 
-    } catch (err) {
-      setError("An unexpected error occurred.");
+    } catch (err: any) {
+      setError(err.message || "An unexpected error occurred.");
     } finally {
       setIsLoading(false);
     }
