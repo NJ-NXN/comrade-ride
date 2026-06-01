@@ -19,6 +19,24 @@ const Signup = () => {
     e.preventDefault();
     setError("");
 
+    //Trim whitespace and force clean strings
+    const cleanEmail = email.trim().toLowerCase();
+    const cleanName = fullName.trim();
+    const cleanPhone = phone.trim().replace(/\s+/g, ''); // Removes all spaces from phone
+
+    // Reject malformed payloads
+    if (cleanName.length < 2 || cleanName.length > 50) {
+      setError("Name must be between 2 and 50 characters.");
+      return;
+    }
+
+    // Kenyan phone regex (matches 07.., 01.., 2547.., +2547..)
+    const phoneRegex = /^(?:254|\+254|0)?(7|1)[0-9]{8}$/;
+    if (!phoneRegex.test(cleanPhone)) {
+      setError("Please enter a valid Kenyan M-Pesa number.");
+      return;
+    }
+
     if (password !== confirmPassword) {
       setError("Passwords do not match. Please try again.");
       return;
@@ -29,13 +47,13 @@ const Signup = () => {
     try {
       // Send email/password for Auth, and Phone for Metadata
       const { data, error } = await supabase.auth.signUp({
-        email: email, 
+        email: cleanEmail, 
         password: password,
         options: {
           data: {
             //saves the phone number and name to the user's profile data
-            phone: phone, 
-            full_name: fullName,
+            phone: cleanPhone, 
+            full_name: cleanName,
           }
         }
       });
@@ -87,6 +105,7 @@ const Signup = () => {
               <input
                 type="text"
                 required
+                maxLength={50}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 placeholder="John Doe"
                 value={fullName}
@@ -100,6 +119,7 @@ const Signup = () => {
               <input
                 type="email"
                 required
+                maxLength={100}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
                 placeholder="student@uni.ac.ke"
                 value={email}
@@ -113,6 +133,7 @@ const Signup = () => {
               <input
                 type="tel"
                 required
+                maxLength={15}
                 className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                 placeholder="0712 345 678"
                 value={phone}
