@@ -99,17 +99,23 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   };
 
   const cancelTicket = async (ticketId: string) => {
+    if (!user) {
+      throw new Error("You must be logged in to cancel a ticket.");
+    }
+
     try {
       const { error } = await supabase
-        .from("tickets")
-        .update({ status: "Cancelled" })
-        .eq("id", ticketId);
+        .from('tickets')
+        // Assuming cancellation logic is either a delete() or an update({ status: 'cancelled' })
+        .delete() // or .update({ status: 'cancelled' })
+        .eq('id', ticketId)
+        .eq('user_id', user.id);
 
       if (error) throw error;
-      
+        // Update local React state to remove the cancelled ticket
+        setTickets((prev) => prev.filter((ticket) => ticket.id !== ticketId));
       // Refresh the tickets list to instantly update the UI!
-      await fetchTickets();
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error cancelling ticket:", error);
       throw error;
     }
