@@ -8,62 +8,84 @@ interface BookingModalProps {
   onClose: () => void;
   ride: Ride | null;
   selectedDate: string;
+  userPickup?: string; 
+  userDestination?: string;
 }
 
-const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps) => {
+// Dictionary to make the locked inputs look professional!
+const locationLabels: Record<string, string> = {
+  "town": "CBD - KENCOM",
+  "maasai": "Rongai - Maasai Mall",
+  "cleanshelf": "Rongai - Cleanshelf",
+  "langata": "Langata - T-Mall",
+  "karen": "Karen - Galleria",
+  "mmu": "Multimedia University",
+  "strathmore": "Strathmore University",
+  "uon": "UoN Main Campus",
+  "cuea": "CUEA",
+  "copa": "Cooperative University",
+  "ksl": "Kenya School of Law",
+  "tangaza": "Tangaza University",
+  "africa": "Africa Nazarene University"
+};
+
+const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: BookingModalProps) => {
 
   const [step, setStep] = useState<'details' | 'processing' | 'success'>('details');
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [seatNumber, setSeatNumber] = useState("1");
+  const [pickupLocation, setPickupLocation] = useState("");
+  const [destination, setDestination] = useState("");
   const navigate = useNavigate();
   const { bookTicket } = useTickets();
   
-  // Whenever the modal opens, ensure we start at the 'details' step
   useEffect(() => {
     if (isOpen) {
       setStep('details');
-      setPhoneNumber(""); // Reset phone number
+      setPhoneNumber(""); 
+      setSeatNumber("1");
+      // FIX: Added || "" so TypeScript knows it will never be undefined
+      setPickupLocation(userPickup || "");
+      setDestination(userDestination || "");
     }
-  }, [isOpen]);
+  }, [isOpen, userPickup, userDestination]);
 
-  // Don't render anything if it's closed or if no ride is selected
   if (!isOpen || !ride) return null;
 
   const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
     setStep('processing');
     
-    // Simulate the M-Pesa phone prompt wait time
     setTimeout(async () => {
       try {
-        // save it to the cloud!
-        await bookTicket(ride, selectedDate); 
+        await bookTicket({
+          rideId: ride.id,
+          seatNumber: seatNumber,
+          pickupLocation: pickupLocation, // Saves the raw ID (e.g. "mmu") to the DB
+          destination: destination
+        }); 
         setStep('success');
-      } catch (error) {
-        alert("There was an issue saving your ticket. Please try again.");
-        setStep('details'); // Kick them back to the start if it fails
+      } catch (error: any) {
+        alert(error.message || "There was an issue saving your ticket. Please try again.");
+        setStep('details'); 
       }
     }, 3000); 
   };
 
   return (
     <>
-      {/* Backdrop */}
       <div 
-        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity flex items-center justify-center p-4"
-        onClick={step === 'processing' ? undefined : onClose} // Prevent closing while processing
+        className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 transition-opacity flex items-center justify-center p-4 overflow-y-auto"
+        onClick={step === 'processing' ? undefined : onClose} 
       >
-        {/* Modal Container */}
         <div 
-          className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden transform transition-all"
-          onClick={(e) => e.stopPropagation()} // Prevent clicks inside the modal from closing it
+          className="bg-white rounded-2xl shadow-2xl w-full max-w-md my-8 transform transition-all"
+          onClick={(e) => e.stopPropagation()} 
         >
-          
-          {/* Header */}
-          <div className="bg-gray-50 border-b border-gray-100 px-6 py-4 flex justify-between items-center">
+          <div className="bg-gray-50 border-b border-gray-100 px-6 py-4 flex justify-between items-center rounded-t-2xl">
             <h3 className="text-lg font-bold text-gray-900">
               {step === 'success' ? 'Booking Confirmed!' : 'Confirm Booking'}
             </h3>
-            {/* Hide close button if we are processing */}
             {step !== 'processing' && (
               <button onClick={onClose} className="text-gray-400 hover:text-gray-600">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"></path></svg>
@@ -72,11 +94,9 @@ const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps
           </div>
 
           <div className="p-6">
-            {/* STEP 1: RIDE DETAILS & FORM */}
             {step === 'details' && (
-              <form onSubmit={handlePayment}>
-                {/* Ride Summary */}
-                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-6">
+              <form onSubmit={handlePayment} className="space-y-4">
+                <div className="bg-blue-50 border border-blue-100 rounded-xl p-4 mb-2">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-semibold text-blue-800 uppercase">Shuttle {ride.vehicle_plate}</span>
                     <span className="text-sm font-bold text-blue-900">{ride.departure_time}</span>
@@ -88,11 +108,43 @@ const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps
                   </div>
                 </div>
 
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Select Seat</label>
+                  <select 
+                    className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 outline-none"
+                    value={seatNumber}
+                    onChange={(e) => setSeatNumber(e.target.value)}
+                    required
+                  >
+                    {[...Array(14)].map((_, i) => (
+                      <option key={i + 1} value={(i + 1).toString()}>Seat {i + 1}</option>
+                    ))}
+                  </select>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Pickup Location</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold cursor-not-allowed focus:outline-none"
+                    value={locationLabels[pickupLocation] || pickupLocation} // FIX: Translates the raw ID into the beautiful label
+                    readOnly
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Destination</label>
+                  <input 
+                    type="text" 
+                    className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold cursor-not-allowed focus:outline-none"
+                    value={locationLabels[destination] || destination} // FIX: Translates the raw ID into the beautiful label
+                    readOnly
+                  />
+                </div>
+
                 {/* M-Pesa Input */}
-                <div className="mb-6">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    M-Pesa Phone Number
-                  </label>
+                <div className="pt-2">
+                  <label className="block text-sm font-medium text-gray-700 mb-1">M-Pesa Phone Number</label>
                   <div className="relative">
                     <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                       <span className="text-gray-500 font-medium">+254</span>
@@ -106,9 +158,7 @@ const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-2">
-                    You will receive an STK prompt on your phone to enter your PIN.
-                  </p>
+                  <p className="text-xs text-gray-500 mt-1 mb-4">You will receive an STK prompt on your phone to enter your PIN.</p>
                 </div>
 
                 <button 
@@ -120,19 +170,16 @@ const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps
               </form>
             )}
 
-            {/* STEP 2: PROCESSING (STK PUSH SIMULATION) */}
             {step === 'processing' && (
               <div className="text-center py-8">
-                {/* Tailwind animated spinner */}
                 <div className="inline-block animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-green-600 mb-4"></div>
                 <h4 className="text-xl font-bold text-gray-900 mb-2">Awaiting Payment</h4>
                 <p className="text-gray-500">
-                  Please check your phone. Enter your M-Pesa PIN to complete the booking for KSh {ride.price}.
+                  Please check your phone. Enter your M-Pesa PIN to complete the booking.
                 </p>
               </div>
             )}
 
-            {/* STEP 3: SUCCESS */}
             {step === 'success' && (
               <div className="text-center py-4">
                 <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -145,8 +192,8 @@ const BookingModal = ({ isOpen, onClose, ride, selectedDate }: BookingModalProps
                 
                 <button 
                     onClick={() => {
-                    onClose(); // Close the modal
-                    navigate("/tickets"); // <-- Route to tickets page!
+                    onClose(); 
+                    navigate("/tickets"); 
                     }}
                     className="w-full bg-blue-600 text-white font-bold py-3 rounded-lg hover:bg-blue-700 transition-colors shadow-md">
                       View My Tickets

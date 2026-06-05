@@ -76,13 +76,14 @@ const Dashboard = () => {
 
       <ProfileSidebar isOpen={isSidebarOpen} onClose={() => setIsSidebarOpen(false)} />
       
-        {/*BOOKING MODAL */}
         <BookingModal 
-          isOpen={isModalOpen} 
-          onClose={() => setIsModalOpen(false)} 
-          ride={selectedRide} 
-          selectedDate={date}
-        />
+        isOpen={isModalOpen}
+        onClose={() => setIsModalOpen(false)}
+        ride={selectedRide}
+        selectedDate={date}
+        userPickup={origin} 
+        userDestination={destination} 
+      />
 
       <div className="absolute inset-0 bg-black/50 backdrop-blur-xs"></div>
 

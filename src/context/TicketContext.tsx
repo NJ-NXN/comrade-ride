@@ -3,18 +3,26 @@ import { type Ride } from "../components/ridecard";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
 
-// Define what a Ticket looks like (Ride data + Ticket specifics)
 export interface Ticket extends Ride {
   route: ReactNode;
   ticketId: string;
   bookingDate: string;
   seatNumber: string;
+  pickupLocation: string;
+  destination: string;   
   status: "Active" | "Completed"| "Cancelled";
+}
+
+interface BookingDetails {
+  rideId: string;
+  seatNumber: string;
+  pickupLocation: string;
+  destination: string;
 }
 
 interface TicketContextType {
   tickets: Ticket[];
-  bookTicket: (ride: Ride, date: string) => Promise<void>;
+  bookTicket: (details: BookingDetails) => Promise<void>;
   cancelTicket: (ticketId: string) => Promise<void>;
   isLoadingTickets: boolean;
 }
@@ -35,12 +43,13 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
 
     setIsLoadingTickets(true);
     try {
-      // Fetch the tickets and join the ride data at once
       const { data, error } = await supabase
         .from("tickets")
         .select(`
           id,
           seat_number,
+          pickup_location,
+          destination,
           status,
           rides (*)
         `)
@@ -49,11 +58,12 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
 
       if (error) throw error;
 
-      // Transform the database response so it perfectly matches what UI expects
       const formattedTickets: Ticket[] = data.map((item: any) => ({
         ...item.rides, 
         ticketId: item.id,
         seatNumber: item.seat_number,
+        pickupLocation: item.pickup_location,
+        destination: item.destination,
         status: item.status,
         bookingDate: item.rides.departure_date,
       }));
@@ -66,35 +76,38 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
     }
   };
 
-  // Automatically fetch tickets when the app loads or when the user changes
-    useEffect(() => {
+  useEffect(() => {
     fetchTickets();
   }, [user]);
 
-  // function to save a new ticket to the cloud
-  const bookTicket = async (ride: Ride, _date: string) => {
-    if (!user) return;
-
-    const randomSeat = Math.floor(Math.random() * 14 + 1).toString();
+  const bookTicket = async ({ rideId, seatNumber, pickupLocation, destination }: BookingDetails) => {
+    if (!user) {
+      throw new Error("You must be logged in to book a ride.");
+    }
 
     try {
-      const { error } = await supabase
-        .from("tickets")
-        .insert({
-          user_id: user.id,
-          ride_id: ride.id,
-          seat_number: randomSeat,
-          status: "Active"
-        });
+      const { error } = await supabase.rpc('book_ticket', {
+        p_ride_id: rideId,
+        p_seat_number: seatNumber,
+        p_pickup_location: pickupLocation,
+        p_destination: destination
+      });
 
-      if (error) throw error;
+      if (error) {
+        if (error.message.includes("Overbooking prevented")) {
+          throw new Error("Sorry, someone just booked the last seat!");
+        }
+        if (error.message.includes("is already booked")) {
+          throw new Error(`Sorry, seat ${seatNumber} was just taken by someone else!`);
+        }
+        throw error;
+      }
 
-      // Re-fetch tickets so the newly booked ride shows up instantly
       await fetchTickets();
 
-    } catch (error) {
+    } catch (error: any) {
       console.error("Error booking ticket:", error);
-      throw error; // Let the modal know it failed
+      throw error; 
     }
   };
 
@@ -106,15 +119,12 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
     try {
       const { error } = await supabase
         .from('tickets')
-        // Assuming cancellation logic is either a delete() or an update({ status: 'cancelled' })
-        .delete() // or .update({ status: 'cancelled' })
+        .delete() 
         .eq('id', ticketId)
         .eq('user_id', user.id);
 
       if (error) throw error;
-        // Update local React state to remove the cancelled ticket
-        setTickets((prev) => prev.filter((ticket) => ticket.id !== ticketId));
-      // Refresh the tickets list to instantly update the UI!
+      setTickets((prev) => prev.filter((ticket) => ticket.ticketId !== ticketId));
     } catch (error: any) {
       console.error("Error cancelling ticket:", error);
       throw error;
