@@ -100,6 +100,9 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
         if (error.message.includes("is already booked")) {
           throw new Error(`Sorry, seat ${seatNumber} was just taken by someone else!`);
         }
+        if (error.message.includes("already booked a seat")) {
+          throw new Error("You have already secured a ticket on this shuttle!");
+        }
         throw error;
       }
 
