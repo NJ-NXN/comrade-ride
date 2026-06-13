@@ -6,6 +6,7 @@ import BookingModal from "../components/bookingModal";
 import { useAuth } from "../context/AuthContext";
 import { supabase } from "../lib/supabase"; 
 import { useAlert } from "../context/AlertContext";
+import { useTickets } from "../context/TicketContext";
 
 const Dashboard = () => {
   const location = useLocation();
@@ -22,6 +23,7 @@ const Dashboard = () => {
   const [selectedRide, setSelectedRide] = useState<Ride | null>(null);  
   const todayString = new Date().toISOString().split("T")[0];
   const { showAlert } = useAlert();
+  const { tickets } = useTickets();
   const fullUserName = user?.user_metadata?.full_name || "Comrade";
   const displayName = fullUserName.split(' ')[0];
   const initial = displayName.charAt(0).toUpperCase();
@@ -67,6 +69,18 @@ const Dashboard = () => {
   };
 
   const handleBookRide = (ride: Ride) => {
+
+    const alreadyBooked = tickets.some((ticket) => ticket.id === ride.id);
+
+    if (alreadyBooked) {
+      showAlert({
+        title: "Booking Restricted",
+        message: "You have already secured a seat on this shuttle. Duplicate bookings are not allowed.",
+        type: "error"
+      });
+      return; // Absolute termination: do not open the modal!
+    }
+
     setSelectedRide(ride);
     setIsModalOpen(true);
   };
