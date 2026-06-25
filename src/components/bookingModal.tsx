@@ -41,7 +41,6 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
   const navigate = useNavigate();
   const { bookTicket } = useTickets();
   const { showAlert } = useAlert();
-
   
   useEffect(() => {
     if (isOpen) {
@@ -81,10 +80,11 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
         setStep('success');
       } catch (error: any) {
         showAlert({
-        title: "Unable to save your ticket",
-        message: "There was an issue saving your ticket. Please try again.",
-      });
-      setStep('details'); 
+          title: "Unable to save your ticket",
+          message: error.message || "There was an issue saving your ticket. Please try again.",
+          type: "error"
+        });
+        setStep('details'); 
       }
     }, 3000); 
   };
