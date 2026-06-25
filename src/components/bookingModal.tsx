@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import { type Ride } from "./ridecard";
 import { useNavigate } from "react-router-dom";
 import { useTickets } from "../context/TicketContext";
+import { useAlert } from "../context/AlertContext";
 
 interface BookingModalProps {
   isOpen: boolean;
@@ -36,17 +37,20 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
   const [seatNumber, setSeatNumber] = useState("1");
   const [pickupLocation, setPickupLocation] = useState("");
   const [destination, setDestination] = useState("");
+  const [error, setError] = useState("");
   const navigate = useNavigate();
   const { bookTicket } = useTickets();
+  const { showAlert } = useAlert();
+
   
   useEffect(() => {
     if (isOpen) {
       setStep('details');
       setPhoneNumber(""); 
       setSeatNumber("1");
-      // FIX: Added || "" so TypeScript knows it will never be undefined
       setPickupLocation(userPickup || "");
       setDestination(userDestination || "");
+      setError("");
     }
   }, [isOpen, userPickup, userDestination]);
 
@@ -54,8 +58,18 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
 
   const handlePayment = (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+
+    //M-PESA validation
+    const cleanPhone = phoneNumber.trim().replace(/\s+/g, '');
+    const phoneRegex = /^(?:254|\+254|0)?(7|1)[0-9]{8}$/;
+
+    if (!phoneRegex.test(cleanPhone)) {
+      setError("Please enter a valid Kenyan M-Pesa number.");
+      return; // Stop execution before setting to 'processing'
+    }
     setStep('processing');
-    
+
     setTimeout(async () => {
       try {
         await bookTicket({
@@ -66,8 +80,11 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
         }); 
         setStep('success');
       } catch (error: any) {
-        alert(error.message || "There was an issue saving your ticket. Please try again.");
-        setStep('details'); 
+        showAlert({
+        title: "Unable to save your ticket",
+        message: "There was an issue saving your ticket. Please try again.",
+      });
+      setStep('details'); 
       }
     }, 3000); 
   };
