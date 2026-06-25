@@ -59,13 +59,13 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
     e.preventDefault();
     setError("");
 
-    //M-PESA validation
+    // M-PESA validation
     const cleanPhone = phoneNumber.trim().replace(/\s+/g, '');
     const phoneRegex = /^(?:254|\+254|0)?(7|1)[0-9]{8}$/;
 
     if (!phoneRegex.test(cleanPhone)) {
       setError("Please enter a valid Kenyan M-Pesa number.");
-      return; // Stop execution before setting to 'processing'
+      return; 
     }
     setStep('processing');
 
@@ -74,15 +74,15 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
         await bookTicket({
           rideId: ride.id,
           seatNumber: seatNumber,
-          pickupLocation: pickupLocation, // Saves the raw ID (e.g. "mmu") to the DB
+          pickupLocation: pickupLocation, 
           destination: destination
         }); 
         setStep('success');
-      } catch (error: any) {
+      } catch (err: any) {
         showAlert({
           title: "Unable to save your ticket",
-          message: error.message || "There was an issue saving your ticket. Please try again.",
-          type: "error"
+          message: err?.message || "There was an issue saving your ticket. Please try again.",
+          type: "error" 
         });
         setStep('details'); 
       }
@@ -144,7 +144,7 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
                   <input 
                     type="text" 
                     className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold cursor-not-allowed focus:outline-none"
-                    value={locationLabels[pickupLocation] || pickupLocation} // FIX: Translates the raw ID into the beautiful label
+                    value={locationLabels[pickupLocation] || pickupLocation}
                     readOnly
                   />
                 </div>
@@ -154,12 +154,11 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
                   <input 
                     type="text" 
                     className="w-full px-4 py-3 bg-gray-100 border border-gray-200 rounded-lg text-gray-700 font-semibold cursor-not-allowed focus:outline-none"
-                    value={locationLabels[destination] || destination} // FIX: Translates the raw ID into the beautiful label
+                    value={locationLabels[destination] || destination}
                     readOnly
                   />
                 </div>
 
-                {/* M-Pesa Input */}
                 <div className="pt-2">
                   <label className="block text-sm font-medium text-gray-700 mb-1">M-Pesa Phone Number</label>
                   <div className="relative">
@@ -175,7 +174,11 @@ const BookingModal = ({ isOpen, onClose, ride, userPickup, userDestination }: Bo
                       required
                     />
                   </div>
-                  <p className="text-xs text-gray-500 mt-1 mb-4">You will receive an STK prompt on your phone to enter your PIN.</p>
+                  {error ? (
+                    <p className="text-red-500 text-sm font-medium mt-2 animate-pulse">{error}</p>
+                  ) : (
+                    <p className="text-xs text-gray-500 mt-1 mb-4">You will receive an STK prompt on your phone to enter your PIN.</p>
+                  )}
                 </div>
 
                 <button 
