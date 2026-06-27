@@ -2,6 +2,7 @@ import { createContext, useContext, useEffect, useState, type ReactNode } from "
 import { type Ride } from "../components/ridecard";
 import { supabase } from "../lib/supabase";
 import { useAuth } from "./AuthContext";
+import { useAlert } from "../context/AlertContext";
 
 export interface Ticket extends Ride {
   route: ReactNode;
@@ -33,6 +34,7 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
   const [tickets, setTickets] = useState<Ticket[]>([]);
   const [isLoadingTickets, setIsLoadingTickets] = useState(true);
   const { user } = useAuth(); 
+  const { showAlert } = useAlert();
 
   const fetchTickets = async () => {
     if (!user) {
@@ -69,8 +71,11 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
       }));
 
       setTickets(formattedTickets);
-    } catch (error) {
-      console.error("Error fetching tickets:", error);
+    } catch (error) {showAlert({
+        title: "Fetch Error",
+        message: `Error fetching tickets: ${(error as Error).message}`,
+        type: "error"
+      });
     } finally {
       setIsLoadingTickets(false);
     }
@@ -109,7 +114,11 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
       await fetchTickets();
 
     } catch (error: any) {
-      console.error("Error booking ticket:", error);
+      showAlert({
+        title: "Booking Failed",
+        message: error.message || "There was an issue processing your booking.",
+        type: "error"
+      });
       throw error; 
     }
   };
@@ -129,7 +138,11 @@ export const TicketProvider = ({ children }: { children: ReactNode }) => {
       if (error) throw error;
       setTickets((prev) => prev.filter((ticket) => ticket.ticketId !== ticketId));
     } catch (error: any) {
-      console.error("Error cancelling ticket:", error);
+      showAlert({
+        title: "Cancellation Failed",
+        message: error.message || "There was an issue cancelling your ticket.",
+        type: "error"
+      });
       throw error;
     }
   };

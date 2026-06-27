@@ -46,7 +46,7 @@ const Signup = () => {
 
     try {
       // Send email/password for Auth, and Phone for Metadata
-      const { data, error } = await supabase.auth.signUp({
+      const { error } = await supabase.auth.signUp({
         email: cleanEmail, 
         password: password,
         options: {
@@ -74,7 +74,6 @@ const Signup = () => {
         return;
       }
 
-      console.log("Success!", data);
       showAlert({ title: "Account Created", message: "Your account has been created successfully!", type: "success" });
       navigate("/login"); // Send them to the login page
 

@@ -57,7 +57,6 @@ const Dashboard = () => {
       // Update the state with the real data
       setAvailableRides(data || []);
     } catch (error) {
-      console.error("Error fetching rides:", error);
       showAlert({
         title: "Fetch Failed",
         message: "Failed to fetch rides. Please try again.",

@@ -150,7 +150,6 @@ const AccountDetails = () => {
         message: "Failed to delete account. Please try again.",
         type: "error"
       });
-      console.error(error);
     } finally {
       setIsLoading(false);
     }

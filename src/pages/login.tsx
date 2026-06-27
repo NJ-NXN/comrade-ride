@@ -40,7 +40,7 @@ const Login = () => {
       }
 
       // 2. Now log in securely using the email!
-      const { data, error } = await supabase.auth.signInWithPassword({
+      const { error } = await supabase.auth.signInWithPassword({
         email: loginEmail,
         password: password,
       });
@@ -65,8 +65,6 @@ const Login = () => {
         });
         return;
       }
-
-      console.log("Logged in successfully:", data);
       navigate("/dashboard"); // Take them to the app!
 
     } catch (err: any) {
