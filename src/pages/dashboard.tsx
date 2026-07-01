@@ -68,21 +68,23 @@ const Dashboard = () => {
   };
 
   const handleBookRide = (ride: Ride) => {
+      // Check if there is an active ticket corresponding to this ride's ID
+      const alreadyBooked = tickets.some(
+        (ticket) => ticket.id === ride.id && ticket.status === "Active"
+      );
 
-    const alreadyBooked = tickets.some((ticket) => ticket.id === ride.id);
+      if (alreadyBooked) {
+        showAlert({
+          title: "Booking Restricted",
+          message: "You already have an active seat secured on this shuttle.",
+          type: "error"
+        });
+        return; // Absolute termination: do not open the modal!
+      }
 
-    if (alreadyBooked) {
-      showAlert({
-        title: "Booking Restricted",
-        message: "You have already secured a seat on this shuttle. Duplicate bookings are not allowed.",
-        type: "error"
-      });
-      return; // Absolute termination: do not open the modal!
-    }
-
-    setSelectedRide(ride);
-    setIsModalOpen(true);
-  };
+      setSelectedRide(ride);
+      setIsModalOpen(true);
+    };
   
   return (
     <div className="relative min-h-screen w-full bg-[url('/src/assets/upperhill.jpg')] bg-cover bg-center bg-fixed">
