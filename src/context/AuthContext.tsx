@@ -6,9 +6,10 @@ import { useAlert } from "./AlertContext";
 interface AuthContextType {
   user: User | null;
   loading: boolean;
+  refreshUser: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true });
+const AuthContext = createContext<AuthContextType>({ user: null, loading: true, refreshUser: async () => {} });
 
 // Set inactivity timeout to 15 minutes (in milliseconds)
 // 15 mins * 60 seconds * 1000 ms
@@ -18,6 +19,13 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [user, setUser] = useState<User | null>(null);
   const [loading, setLoading] = useState(true);
   const { showAlert } = useAlert();
+
+  const refreshUser = async () => {
+    const { data: { user }, error } = await supabase.auth.getUser();
+    if (!error && user) {
+      setUser(user); // Triggers a React re-render with the fresh data!
+    }
+  };
 
   useEffect(() => {
     //Check if there's an active session when the app loads
@@ -73,7 +81,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   }, []);
 
   return (
-    <AuthContext.Provider value={{ user, loading }}>
+    <AuthContext.Provider value={{ user, loading, refreshUser }}>
       {children}
     </AuthContext.Provider>
   );

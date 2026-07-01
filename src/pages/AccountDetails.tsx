@@ -6,7 +6,7 @@ import { supabase } from "../lib/supabase";
 import { useAlert } from "../context/AlertContext";
 
 const AccountDetails = () => {
-  const { user } = useAuth();
+  const { user, refreshUser } = useAuth();
   const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);// State for Edit Mode
   const [isLoading, setIsLoading] = useState(false);
@@ -57,8 +57,7 @@ const AccountDetails = () => {
       });
       setIsEditing(false); // Turn off edit mode
 
-      // Force a page refresh to update the sidebar and header instantly
-      window.location.reload(); 
+      await refreshUser(); // Refresh the user data in the context after update
 
     } catch (error: any) {
       showAlert({
