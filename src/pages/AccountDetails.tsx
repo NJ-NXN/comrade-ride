@@ -81,8 +81,8 @@ const AccountDetails = () => {
       return;
     }
 
-    if (newPassword.length < 6) {
-      setPasswordError("Password must be at least 6 characters.");
+    if (newPassword.length < 8) {
+      setPasswordError("Password must be at least 8 characters long!");
       return;
     }
 
@@ -279,7 +279,7 @@ const AccountDetails = () => {
                   <form onSubmit={handleChangePassword} className="space-y-4 p-6 bg-gray-50 rounded-xl border border-gray-200">
                     <h4 className="text-sm font-semibold text-gray-700 mb-2">Change Password</h4>
                     
-                    {/* NEW: Current Password Field */}
+                    {/* Current Password Field */}
                     <div className="relative mb-4">
                       <input 
                         type={showCurrentPassword ? "text" : "password"} 
@@ -302,7 +302,7 @@ const AccountDetails = () => {
                       </button>
                     </div>
 
-                    {/* New Password Grid */}
+                    {/* Password Grid */}
                     <div className="space-y-6 max-w-2xl">
                       <div className="relative">
                         <input 

@@ -33,6 +33,11 @@ const ResetPassword = () => {
       return;
     }
 
+    if (password.length < 8) {
+      setError("Passwords must be at least 8 characters long!");
+      return;
+    }
+
     setIsLoading(true);
 
     try {
